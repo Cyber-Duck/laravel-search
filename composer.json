@@ -1,15 +1,15 @@
 {
-    "name": "cyberduck/laravel-search",
+    "name": "cyber-duck/laravel-search",
     "description": "Add index and search functionality to laravel",
     "license": "MIT",
     "authors": [
         {
             "name": "Neil Aldred",
             "email": "neil@cyber-duck.co.uk <Neil Aldred>",
-            "homepage": "author homepage"
+            "homepage": "https://www.cyber-duck.co.uk/"
         }
     ],
-    "homepage": "https://github.com/cyberduck/laravel-search",
+    "homepage": "https://www.cyber-duck.co.uk/",
     "keywords": ["Laravel", "laravel-search"],
     "require": {
         "elasticsearch/elasticsearch": "^7.8",
