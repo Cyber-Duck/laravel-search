@@ -43,6 +43,16 @@ class SearchServiceProvider extends ServiceProvider
     }
 
     /**
+     * Bootstrap any application services.
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        $this->configurePublishing();
+    }
+
+    /**
      * Get the services provided by the provider.
      *
      * @return array
@@ -50,5 +60,21 @@ class SearchServiceProvider extends ServiceProvider
     public function provides()
     {
         return ['search'];
+    }
+
+    /**
+     * Configure publishing for the package.
+     *
+     * @return void
+     */
+    protected function configurePublishing()
+    {
+        if (!$this->app->runningInConsole()) {
+            return;
+        }
+
+        $this->publishes([
+            __DIR__ . '/../config/laravel-search.php' => config_path('laravel-search.php'),
+        ], 'laravel-search-config');
     }
 }
