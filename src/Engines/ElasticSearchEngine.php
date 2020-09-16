@@ -219,7 +219,6 @@ class ElasticSearchEngine extends EngineContract
                                 'multi_match' => [
                                     'query' => $builder->query,
                                     'fields' => $builder->fields,
-                                    'type' => 'phrase',
                                     'operator' => 'and',
                                     'fuzziness' => config('laravel-search.fuzziness'),
                                 ],
@@ -283,7 +282,6 @@ class ElasticSearchEngine extends EngineContract
                 'query' => [
                     'query_string' => [
                         'query' => $builder->query,
-                        'type' => 'phrase',
                         'default_operator' => 'and',
                         'fuzziness' => config('laravel-search.fuzziness'),
                     ],
