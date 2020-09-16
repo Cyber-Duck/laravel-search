@@ -216,10 +216,10 @@ class ElasticSearchEngine extends EngineContract
                     'bool' => [
                         'must' => [
                             [
-                                'multi_match' => [
+                                'query_string' => [
                                     'query' => $builder->query,
                                     'fields' => $builder->fields,
-                                    'operator' => 'and',
+                                    'default_operator' => 'and',
                                     'fuzziness' => config('laravel-search.fuzziness'),
                                 ],
                             ]
