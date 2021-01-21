@@ -13,6 +13,8 @@ return [
 
     ],
 
+    'fuzziness' => env('SEARCH_FUZZINESS', 'AUTO'),
+
     'es' => [
         'user' => env('SEARCH_USER', ''),
         'password' => env('SEARCH_PASSWORD'),
