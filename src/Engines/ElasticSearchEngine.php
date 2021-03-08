@@ -267,6 +267,20 @@ class ElasticSearchEngine extends EngineContract
     }
 
     /**
+     * @param Builder $builder
+     * @return array
+     */
+    protected function ranges(Builder $builder)
+    {
+        $ranges = $builder->ranges;
+
+        $field = key($ranges);
+        return [
+            $field => $ranges
+        ];
+    }
+
+    /**
      * Perform the given search on the engine for all indices
      *
      * @param AllBuilder $builder
@@ -297,8 +311,10 @@ class ElasticSearchEngine extends EngineContract
         }
 
         foreach ($this->filters($builder) as $field => $value) {
+            $queryParameter = is_array($value) ? 'terms' : 'term';
+
             $params['body']['filter']['bool']['must'] = [
-                'term' => [$field => $value]
+                $queryParameter => [$field => $value]
             ];
         }
 
