@@ -261,9 +261,7 @@ class ElasticSearchEngine extends EngineContract
      */
     protected function filters(Builder $builder)
     {
-        return collect($builder->wheres)->map(function ($value, $key) {
-            return [$key => $value];
-        })->values()->all();
+        return $builder->wheres;
     }
 
     /**
@@ -294,13 +292,17 @@ class ElasticSearchEngine extends EngineContract
             'from' => $builder->offset,
             'body' => [
                 'query' => [
-                    'query_string' => [
-                        'query' => $builder->query,
-                        'type' => 'phrase',
-                        'default_operator' => 'and',
+                    'bool' => [
+                        'must' => [
+                            'query_string' => [
+                                'query' => $builder->query,
+                                'type' => 'phrase',
+                                'default_operator' => 'and',
+                            ],
+                        ],
                     ],
-                ]
-            ]
+                ],
+            ],
         ];
 
         if (empty($builder->query)) {
@@ -313,7 +315,7 @@ class ElasticSearchEngine extends EngineContract
         foreach ($this->filters($builder) as $field => $value) {
             $queryParameter = is_array($value) ? 'terms' : 'term';
 
-            $params['body']['filter']['bool']['must'] = [
+            $params['body']['query']['bool']['filter'] = [
                 $queryParameter => [$field => $value]
             ];
         }
