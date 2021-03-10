@@ -261,9 +261,16 @@ class ElasticSearchEngine extends EngineContract
      */
     protected function filters(Builder $builder)
     {
-        return collect($builder->wheres)->map(function ($value, $key) {
-            return [$key => $value];
-        })->values()->all();
+        return $builder->wheres;
+    }
+
+    /**
+     * @param Builder $builder
+     * @return array
+     */
+    protected function ranges(Builder $builder)
+    {
+        return $builder->ranges;
     }
 
     /**
@@ -280,26 +287,43 @@ class ElasticSearchEngine extends EngineContract
             'from' => $builder->offset,
             'body' => [
                 'query' => [
-                    'query_string' => [
-                        'query' => $builder->query,
-                        'type' => 'phrase',
-                        'default_operator' => 'and',
+                    'bool' => [
+                        'must' => [
+                            [
+                                'query_string' => [
+                                    'query' => $builder->query,
+                                    'type' => 'phrase',
+                                    'default_operator' => 'and',
+                                ],
+                            ]
+                        ],
                     ],
-                ]
-            ]
+                ],
+            ],
         ];
 
-        if (empty($builder->query)) {
-            $params['body']['query'] = [
-                'match_all' => (object)null
-            ];
-
+        foreach ($this->ranges($builder) as $field => $ranges) {
+            $params['body']['query']['bool']['must'][]['range'][$field] = $ranges;
         }
 
         foreach ($this->filters($builder) as $field => $value) {
-            $params['body']['filter']['bool']['must'] = [
-                'term' => [$field => $value]
+            $queryParameter = is_array($value) ? 'terms' : 'term';
+
+            $params['body']['query']['bool']['filter'] = [
+                $queryParameter => [$field => $value]
             ];
+        }
+
+        if (empty($builder->query)) {
+            $queryContainsFilters = $this->filters($builder);
+
+            if (! $queryContainsFilters) {
+                $params['body']['query'] = [
+                    'match_all' => (object)null
+                ];
+            } else {
+                $params['body']['query']['bool']['must']['match_all'] = (object)null;
+            }
         }
 
         if ($sort = $builder->sort) {

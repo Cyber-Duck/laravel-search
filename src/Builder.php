@@ -46,6 +46,11 @@ class Builder
     public $wheres = [];
 
     /**
+     * @var array
+     */
+    public $ranges = [];
+
+    /**
      * The "limit" that should be applied to the search.
      *
      * @var int
@@ -124,6 +129,36 @@ class Builder
     public function where($field, $value)
     {
         $this->wheres[$field] = $value;
+
+        return $this;
+    }
+
+    /**
+     * Add a range for a single field with one or more operators
+     *
+     * @param string $field
+     * @param array $ranges
+     *
+     * @return $this
+     */
+    public function ranges($field, array $ranges)
+    {
+        $validOperators = ['gt', 'gte', 'lt', 'lte'];
+        $selectedOperators = array_keys($ranges);
+
+        foreach ($selectedOperators as $selectedOperator) {
+            $isValidOperator = in_array($selectedOperator, $validOperators);
+            if ($isValidOperator) {
+                continue;
+            }
+
+            throw new \InvalidArgumentException("Invalid operator {$selectedOperator}");
+        }
+
+        $this->ranges[$field] = array_merge(
+            $this->ranges[$field] ?? [],
+            $ranges
+        );
 
         return $this;
     }
