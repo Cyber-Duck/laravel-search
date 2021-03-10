@@ -270,12 +270,7 @@ class ElasticSearchEngine extends EngineContract
      */
     protected function ranges(Builder $builder)
     {
-        $ranges = $builder->ranges;
-
-        $field = key($ranges);
-        return [
-            $field => $ranges
-        ];
+        return $builder->ranges;
     }
 
     /**
@@ -294,22 +289,21 @@ class ElasticSearchEngine extends EngineContract
                 'query' => [
                     'bool' => [
                         'must' => [
-                            'query_string' => [
-                                'query' => $builder->query,
-                                'type' => 'phrase',
-                                'default_operator' => 'and',
-                            ],
+                            [
+                                'query_string' => [
+                                    'query' => $builder->query,
+                                    'type' => 'phrase',
+                                    'default_operator' => 'and',
+                                ],
+                            ]
                         ],
                     ],
                 ],
             ],
         ];
 
-        if (empty($builder->query)) {
-            $params['body']['query'] = [
-                'match_all' => (object)null
-            ];
-
+        foreach ($this->ranges($builder) as $field => $ranges) {
+            $params['body']['query']['bool']['must'][]['range'][$field] = $ranges;
         }
 
         foreach ($this->filters($builder) as $field => $value) {
@@ -318,6 +312,18 @@ class ElasticSearchEngine extends EngineContract
             $params['body']['query']['bool']['filter'] = [
                 $queryParameter => [$field => $value]
             ];
+        }
+
+        if (empty($builder->query)) {
+            $queryContainsFilters = $this->filters($builder);
+
+            if (! $queryContainsFilters) {
+                $params['body']['query'] = [
+                    'match_all' => (object)null
+                ];
+            } else {
+                $params['body']['query']['bool']['must']['match_all'] = (object)null;
+            }
         }
 
         if ($sort = $builder->sort) {
