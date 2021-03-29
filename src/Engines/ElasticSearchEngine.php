@@ -293,7 +293,7 @@ class ElasticSearchEngine extends EngineContract
         foreach ($this->filters($builder) as $field => $value) {
             $queryParameter = is_array($value) ? 'terms' : 'term';
 
-            $params['body']['query']['bool']['filter'] = [
+            $params['body']['query']['bool']['filter'][] = [
                 $queryParameter => [$field => $value]
             ];
         }
