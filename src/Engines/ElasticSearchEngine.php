@@ -79,7 +79,9 @@ class ElasticSearchEngine extends EngineContract
             $objects['body'][] = array_merge(['model' => get_class($model)], $searchableData);
         }
 
+
         if (!empty($objects)) {
+            $objects['refresh'] = config('laravel-search.wait_for', false);
             $this->client->bulk((array)$objects);
         }
     }
