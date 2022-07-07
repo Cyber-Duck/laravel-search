@@ -13,7 +13,7 @@
     "keywords": ["Laravel", "laravel-search"],
     "require": {
         "elasticsearch/elasticsearch": "^7.8",
-        "illuminate/support": "~5|~6|~7|~8",
+        "illuminate/support": "~5|~6|~7|~8|~9",
         "laravel/helpers": "^1.4"
     },
     "require-dev": {
