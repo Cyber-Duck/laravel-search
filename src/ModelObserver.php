@@ -57,6 +57,8 @@ class ModelObserver
      */
     public function saved($model)
     {
+        $model = $model->fresh();
+
         if (static::syncingDisabledFor($model)) {
             return;
         }

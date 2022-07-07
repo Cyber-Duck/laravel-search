@@ -79,7 +79,9 @@ class ElasticSearchEngine extends EngineContract
             $objects['body'][] = array_merge(['model' => get_class($model)], $searchableData);
         }
 
+
         if (!empty($objects)) {
+            $objects['refresh'] = config('laravel-search.wait_for', false);
             $this->client->bulk((array)$objects);
         }
     }
@@ -286,44 +288,34 @@ class ElasticSearchEngine extends EngineContract
             'size' => $builder->limit,
             'from' => $builder->offset,
             'body' => [
-                'query' => [
-                    'bool' => [
-                        'must' => [
-                            [
-                                'query_string' => [
-                                    'query' => $builder->query,
-                                    'type' => 'phrase',
-                                    'default_operator' => 'and',
-                                ],
-                            ]
-                        ],
-                    ],
-                ],
+                'query' => [],
             ],
         ];
+
+        foreach ($this->filters($builder) as $field => $value) {
+            $queryParameter = is_array($value) ? 'terms' : 'term';
+
+            $params['body']['query']['bool']['filter'][] = [
+                $queryParameter => [$field => $value]
+            ];
+        }
 
         foreach ($this->ranges($builder) as $field => $ranges) {
             $params['body']['query']['bool']['must'][]['range'][$field] = $ranges;
         }
 
-        foreach ($this->filters($builder) as $field => $value) {
-            $queryParameter = is_array($value) ? 'terms' : 'term';
-
-            $params['body']['query']['bool']['filter'] = [
-                $queryParameter => [$field => $value]
+        if (! empty($builder->query)) {
+            $params['body']['query']['bool']['must'][]['query_string'] = [
+                'query' => $builder->query,
+                'type' => 'phrase',
+                'default_operator' => 'and',
             ];
         }
 
-        if (empty($builder->query)) {
-            $queryContainsFilters = $this->filters($builder);
-
-            if (! $queryContainsFilters) {
-                $params['body']['query'] = [
-                    'match_all' => (object)null
-                ];
-            } else {
-                $params['body']['query']['bool']['must']['match_all'] = (object)null;
-            }
+        if (! $builder->query && ! $this->ranges($builder) && ! $this->filters($builder)) {
+            $params['body']['query'] = [
+                'match_all' => (object)null
+            ];
         }
 
         if ($sort = $builder->sort) {
