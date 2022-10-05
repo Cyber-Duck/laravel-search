@@ -10,12 +10,12 @@ class Search {
      *
      * @return Builder
      */
-    public static function all($query = '')
+    public static function all($query = '', $indices = [])
     {
         return app(AllBuilder::class, [
             'model' => new static,
             'query' => $query,
+            'indices' => $indices
         ]);
     }
-
 }

@@ -281,8 +281,15 @@ class ElasticSearchEngine extends EngineContract
      */
     public function searchAll(AllBuilder $builder)
     {
+        $indices = "$this->indexPrefix-*";
+        if ($builder->indices) {
+            $indices = implode( ',',array_map(function ($arrayValues) {
+                return "$this->indexPrefix-" . $arrayValues;
+            }, $builder->indices));
+        }
+
         $params = [
-            'index' => "$this->indexPrefix-*",
+            'index' => $indices,
             'size' => $builder->limit,
             'from' => $builder->offset,
             'body' => [
